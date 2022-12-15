@@ -1,0 +1,51 @@
+---
+version: "3.5"
+services:
+  appdaemon:
+    image: acockburn/appdaemon:latest
+    volumes:
+      - homeassistant_appdaemon_config:/conf
+    environment:
+      - HA_URL=${HA_URL}
+      - TOKEN=${HA_TOKEN}
+      - DASH_URL=${DASH_URL}
+    ports:
+      - 5050:5050
+    dns:
+      - 192.168.1.254
+    restart: unless-stopped
+    depends_on:
+      - homeassistant
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    environment:
+      - PUID=995
+      - PGID=100
+      - TZ=Europe/London
+    volumes:
+      - homeassistant_homeassistant_config:/config
+      - homeassistant_appdaemon_config:/config/appdaemon
+      - /var/run/dbus:/var/run/dbus:ro
+      - /etc/localtime:/etc/localtime:ro
+    dns:
+      - 192.168.1.254
+    restart: unless-stopped
+    privileged: true
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+    network_mode: host
+  mosquitto:
+    image: eclipse-mosquitto
+    container_name: mosquitto
+    volumes:
+      - homeassistant_mosquitto_config:/mosquitto
+    ports:
+      - 1883:1883
+      - 9001:9001
+volumes:
+  homeassistant_homeassistant_config:
+    external: true
+  homeassistant_appdaemon_config:
+    external: true
+  homeassistant_mosquitto_config:
+    external: true

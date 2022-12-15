@@ -1,0 +1,80 @@
+---
+version: "3.5"
+services:
+  swag:
+    image: lscr.io/linuxserver/swag
+    cap_add:
+      - NET_ADMIN
+    depends_on:
+      - dockerproxy
+    environment:
+      - PUID=995
+      - PGID=100
+      - TZ=Europe/London
+      - URL=${BASE_URL}
+      - SUBDOMAINS=${SUBDOMAINS}
+      - VALIDATION=${VALIDATION}
+      - CERTPROVIDER= #optional
+      - DNSPLUGIN=duckdns #optional
+      - DUCKDNSTOKEN=${DUCKDNS_TOKEN} #optional
+      - EMAIL=${EMAIL} #optional
+      - ONLY_SUBDOMAINS=false #optional
+      - EXTRA_DOMAINS=${EXTRA_DOMAINS} #optional
+      - STAGING=false #optional
+      - DOCKER_MODS=linuxserver/mods:universal-docker|linuxserver/mods:swag-auto-proxy|linuxserver/mods:swag-auto-reload|linuxserver/mods:swag-dashboard|linuxserver/mods:swag-cloudflare-real-ip|linuxserver/mods:universal-cloudflared
+      - DOCKER_HOST=dockerproxy
+    dns:
+      - 192.168.1.254
+    volumes:
+      - swag_config:/config
+    ports:
+      - target: 443
+        published: 443
+        protocol: tcp
+        mode: host
+      - target: 80 #optional
+        published: 80
+        protocol: tcp
+        mode: host
+      - 81:81
+    restart: unless-stopped
+    networks:
+      - webgateway_network
+  heimdall:
+    image: lscr.io/linuxserver/heimdall:latest
+    depends_on:
+      - swag
+    environment:
+      - PUID=995
+      - PGID=100
+      - TZ=Europe/London
+    volumes:
+      - heimdall_config:/config
+    restart: unless-stopped
+    ports:
+      - 50007:80
+    labels:
+      swag: enable
+      swag_address: heimdall
+      swag_port: 80
+      swag_proto: http
+      swag_url: heimdall.${BASE_URL}
+    networks:
+      - webgateway_network
+  dockerproxy:
+    image: ghcr.io/tecnativa/docker-socket-proxy:latest
+    container_name: dockerproxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+    environment:
+      - CONTAINERS=1
+      - POST=0
+    networks:
+      - webgateway_network
+networks:
+  webgateway_network:
+    driver: bridge
+volumes:
+  swag_config:
+  heimdall_config:

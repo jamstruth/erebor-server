@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  jellyfin:
+    image: linuxserver/jellyfin
+    container_name: jellyfin
+    environment:
+      - PUID=995
+      - PGID=100
+      - UMASK=011
+      - TZ=Europe/London
+      - "JELLYFIN_PublishedServerUrl=jellyfin.jamstruth.duckdns.org"
+    volumes:
+      - "jellyfin-cache:/cache"
+      - "jellyfin-config:/config"
+      - "${TV_SHOWS}:/data/tvshows"
+      - "${ANIME}:/data/anime"
+      - "${MOVIES}:/data/movies"
+      - "${MUSIC}:/data/music"
+    ports:
+      - 8096:8096
+      - 8920:8920
+      - 7359:7359/udp # UDP allow clients to discover locally
+      - 1900:1900/udp # DNLA and Client discovery
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128 # Render Device for VAAPI.
+      - /dev/dri/card0:/dev/dri/card0
+    restart: unless-stopped
+    networks:
+      - web_gateway_webgateway_network
+networks:
+  web_gateway_webgateway_network:
+    external: true
+volumes:
+  jellyfin-config:
+  jellyfin-cache:

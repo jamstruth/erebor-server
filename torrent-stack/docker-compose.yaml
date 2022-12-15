@@ -1,0 +1,134 @@
+version: '3.8'
+
+services:
+  deluge:
+    image: lscr.io/linuxserver/deluge
+    restart: always
+    volumes:
+      - torrentstack_deluge:/config
+      - "${DOWNLOADS}:/downloads"
+    ports:
+      - 50002:8112
+      - 51413:51413
+      - 6881:6881
+      - 6881:6881/udp
+    environment:
+      - PUID=995
+      - PGID=100
+      - UMASK=011
+      - TZ=Europe/London
+    networks:
+      - web_gateway_webgateway_network
+    labels:
+      swag: enable
+      swag_address: deluge
+      swag_port: 8112
+      swag_proto: http
+      swag_url: deluge.${BASE_DOMAIN}
+    dns:
+      - 1.1.1.1
+      - 192.168.1.254
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:0.4.8-develop
+    container_name: prowlarr
+    environment:
+      - PUID=995
+      - PGID=100
+      - UMASK=011
+      - TZ=Europe/London
+    volumes:
+      - torrentstack_prowlarr:/config
+    depends_on:
+      - flaresolverr
+      - deluge
+    ports:
+      - 50003:9696
+    restart: unless-stopped
+    networks:
+      - web_gateway_webgateway_network
+    labels:
+      swag: enable
+      swag_address: prowlarr
+      swag_port: 9696
+      swag_proto: http
+      swag_url: prowlarr.${BASE_DOMAIN}
+    dns:
+      - 1.1.1.1
+      - 192.168.1.254
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    restart: unless-stopped
+    ports:
+      - 50006:8191
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_HTML=${LOG_HTML:-false}
+      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+      - TZ=Europe/London
+    networks:
+      - web_gateway_webgateway_network
+  sonarr:
+    image: lscr.io/linuxserver/sonarr
+    restart: always
+    volumes:
+      - torrentstack_sonarr:/config
+      - "${DOWNLOADS}:/downloads"
+      - "${TV_SHOWS}:/tv"
+      - "${ANIME}:/anime"
+    ports:
+      - 50004:8989
+    depends_on:
+      - jackett
+      - deluge
+    environment:
+      - TZ=Europe/London
+      - PUID=995
+      - PGID=100
+      - UMASK=011
+    networks:
+      - web_gateway_webgateway_network
+    labels:
+      swag: enable
+      swag_address: sonarr
+      swag_port: 8989
+      swag_proto: http
+      swag_url: sonarr.${BASE_DOMAIN}
+  radarr:
+    image: lscr.io/linuxserver/radarr:4.2.4.6635-ls157
+    restart: always
+    volumes:
+      - torrentstack_radarr:/config
+      - "${DOWNLOADS}:/downloads"
+      - "${MOVIES}:/movies"
+    ports:
+      - 50005:7878
+    depends_on:
+      - jackett
+      - deluge
+    environment:
+      - TZ=Europe/London
+      - PUID=995
+      - PGID=100
+      - UMASK=011
+    networks:
+      - web_gateway_webgateway_network
+    labels:
+      swag: enable
+      swag_address: radarr
+      swag_port: 7878
+      swag_proto: http
+      swag_url: radarr.${BASE_DOMAIN}
+networks:
+  web_gateway_webgateway_network:
+    external: true
+volumes:
+  torrentstack_sonarr:
+    external: true
+  torrentstack_jackett:
+    external: true
+  torrentstack_deluge:
+    external: true
+  torrentstack_radarr:
+    external: true
+  torrentstack_prowlarr:
+    external: true
