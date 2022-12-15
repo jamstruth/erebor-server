@@ -9,7 +9,7 @@ services:
       - PGID=100
       - UMASK=011
       - TZ=Europe/London
-      - "JELLYFIN_PublishedServerUrl=jellyfin.jamstruth.duckdns.org"
+      - "JELLYFIN_PublishedServerUrl=jellyfin.${BASE_URL}"
     volumes:
       - "jellyfin-cache:/cache"
       - "jellyfin-config:/config"
