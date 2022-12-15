@@ -24,7 +24,7 @@ services:
       swag_address: deluge
       swag_port: 8112
       swag_proto: http
-      swag_url: deluge.${BASE_DOMAIN}
+      swag_url: deluge.${BASE_URL}
     dns:
       - 1.1.1.1
       - 192.168.1.254
@@ -51,7 +51,7 @@ services:
       swag_address: prowlarr
       swag_port: 9696
       swag_proto: http
-      swag_url: prowlarr.${BASE_DOMAIN}
+      swag_url: prowlarr.${BASE_URL}
     dns:
       - 1.1.1.1
       - 192.168.1.254
@@ -78,7 +78,7 @@ services:
     ports:
       - 50004:8989
     depends_on:
-      - jackett
+      - prowlarr
       - deluge
     environment:
       - TZ=Europe/London
@@ -92,7 +92,7 @@ services:
       swag_address: sonarr
       swag_port: 8989
       swag_proto: http
-      swag_url: sonarr.${BASE_DOMAIN}
+      swag_url: sonarr.${BASE_URL}
   radarr:
     image: lscr.io/linuxserver/radarr:4.2.4.6635-ls157
     restart: always
@@ -103,7 +103,7 @@ services:
     ports:
       - 50005:7878
     depends_on:
-      - jackett
+      - prowlarr
       - deluge
     environment:
       - TZ=Europe/London
@@ -117,14 +117,12 @@ services:
       swag_address: radarr
       swag_port: 7878
       swag_proto: http
-      swag_url: radarr.${BASE_DOMAIN}
+      swag_url: radarr.${BASE_URL}
 networks:
   web_gateway_webgateway_network:
     external: true
 volumes:
   torrentstack_sonarr:
-    external: true
-  torrentstack_jackett:
     external: true
   torrentstack_deluge:
     external: true
