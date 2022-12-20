@@ -15,6 +15,12 @@ services:
       OPS: ${OPS}
       SEED: ${SEED}
       MAX_PLAYERS: ${MAX_PLAYERS}
+    labels:
+      swag: enable
+      swag_address: minecraft
+      swag_port: 8123
+      swag_proto: http
+      swag_url: mc.${BASE_URL}
     tty: true
     stdin_open: true
     restart: unless-stopped
@@ -22,6 +28,11 @@ services:
       # attach a directory relative to the directory containing this compose file
       - minecraft:/data
       - minecraft_plugins:/plugins
+    networks:
+      - web_gateway_webgateway_network
 volumes:
   minecraft:
   minecraft_plugins:
+networks:
+  web_gateway_webgateway_network:
+    external: true
