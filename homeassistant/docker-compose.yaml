@@ -11,8 +11,6 @@ services:
       - DASH_URL=${DASH_URL}
     ports:
       - 5050:5050
-    dns:
-      - 192.168.1.254
     restart: unless-stopped
     depends_on:
       - homeassistant
@@ -27,8 +25,6 @@ services:
       - homeassistant_appdaemon_config:/config/appdaemon
       - /var/run/dbus:/var/run/dbus:ro
       - /etc/localtime:/etc/localtime:ro
-    dns:
-      - 192.168.1.254
     restart: unless-stopped
     privileged: true
     devices:
