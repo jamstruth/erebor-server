@@ -25,9 +25,6 @@ services:
       swag_port: 8112
       swag_proto: http
       swag_url: deluge.${BASE_URL}
-    dns:
-      - 1.1.1.1
-      - 192.168.1.254
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:0.4.8-develop
     container_name: prowlarr
