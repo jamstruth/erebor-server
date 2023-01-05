@@ -3,23 +3,32 @@ version: "3"
 # More info at https://github.com/pi-hole/docker-pi-hole/ and https://docs.pi-hole.net/
 services:
   pihole:
-    container_name: pihole
-    image: pihole/pihole:latest
+    container_name: pihole          # We name our container here
+    image: pihole/pihole:latest     # Version 4.1 works with the required cap_add section
+    mac_address: d0:ca:ab:cd:ef:01  # Random MAC address (optional)
+    networks:
+      - pihole_network              # Same name of network defined above
+    dns:
+      - 127.0.0.1
+      - 1.1.1.1
+      - 1.0.0.1
     ports:
-      - "53:53/tcp"
-      - "53:53/udp"
-      - "50011:80/tcp"
-    environment:
+      - 443/tcp
+      - 53/tcp
+      - 53/udp
+      - 67/udp
+      - 80/tcp
+    environment:                    # Optional environment configuration
+      ServerIP: 192.168.0.38     # Change is this matches your NAS IP
       TZ: 'Europe/London'
-      # WEBPASSWORD: 'set a secure password here or it will be random'
-    # Volumes store your data between container upgrades
+    restart: unless-stopped         # Set container to always restart
     volumes:
       - 'config:/etc/pihole'
       - 'dnsmasq:/etc/dnsmasq.d'
-    #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
-    cap_add:
-      - NET_ADMIN # Required if you are using Pi-hole as your DHCP server, else not needed
-    restart: unless-stopped
 volumes:
   dnsmasq:
   config:
+networks:
+  pihole_network:
+    name: ${network_name}
+    external: true
